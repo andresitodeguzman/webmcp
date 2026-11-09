@@ -45,10 +45,18 @@ Reviewed desktop (1280 × 1000 viewport, full page) and mobile (390 × 844 viewp
 
 The screenshot files show deterministic native test calls, not an LLM conversation.
 
+## Public deployment checks
+
+After owner-approved removal of Vercel Authentication for this project only, verified [the production site](https://webmcp-learning-lab.vercel.app) without cookies or authentication. `/`, `/shop`, `/help-desk`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, and 192px/512px icons returned HTTP 200 with expected content types. The worker has `no-cache, no-store, must-revalidate` headers.
+
+`TEST_BASE_URL=https://webmcp-learning-lab.vercel.app npm run test:browser` passed the full native and fallback suites on the public HTTPS origin: shared UI/tool state, ₱489 review, cancel/invalidation/confirmation, stock and reset/reload, route cleanup, desktop/mobile layouts, browser installability checks, five-file static-only cache, offline explanation/icon, paused writes, review cancellation on disconnect, fresh state after reconnect, and update checks without silent reload. No captured app exceptions or console errors.
+
+Also opened the public site in the ordinary Edge profile: it loads without a login wall, offers **Install app**, correctly labels WebMCP as rehearsal, and shows the expected ₱489 mock review. Native mode was separately tested with the experimental feature explicitly enabled. No real payment, address, or order service exists.
+
 ## Limits
 
 - A real LLM agent's tool discovery, choices, handling of missing information, and browser-extension integration have not been tested. The panel is a deterministic caller.
-- A production Vercel deployment reached READY, but inherited Vercel Authentication redirects unauthenticated visitors to SSO (HTTP 302). Public app-route, PWA, and WebMCP checks are blocked by that access gate. No public-origin trial token or custom HTTPS event domain has been configured. Native WebMCP may need supported browser settings or a valid trial; HTTPS alone does not enable it. See [deployment status](DEPLOYMENT.md#current-deployment).
+- No origin-trial token is configured. Native public-origin tests used a disposable Edge profile with `--enable-blink-features=WebMCP`; the ordinary profile correctly showed rehearsal mode. This does not imply native WebMCP support in every attendee browser. See [deployment status](DEPLOYMENT.md#current-deployment).
 - Only the listed browser/runtime/OS were tested. Other browsers and assistive technologies are not verified. Responsive and focus checks are not a complete accessibility audit.
 - The cart and confirmation model is a teaching example in browser memory, not production commerce authorization or payment security.
 

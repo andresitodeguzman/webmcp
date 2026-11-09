@@ -4,11 +4,11 @@ A Progressive Web App (PWA) is an installable website. Installation adds a home-
 
 ## Install
 
-Open the public HTTPS site in a supporting browser. Use the app's **Install app** button if offered, the browser's installation menu, or **Add to Home Screen** / **Add to Dock**. The exact UI depends on the browser and operating system. Declining installation does not prevent normal use.
+Open [the public HTTPS site](https://webmcp-learning-lab.vercel.app) in a supporting browser. Use the app's **Install app** button if offered, the browser's installation menu, or **Add to Home Screen** / **Add to Dock**. The exact UI depends on the browser and operating system. Declining installation does not prevent normal use.
 
 `app/manifest.js` provides a stable app ID, root scope/start URL, standalone display mode, colors, shortcuts to both examples, PNG icons at 192px and 512px, and a padded maskable icon. An Apple touch icon is also included. `scripts/generate-icons.py` regenerates these original geometric icons without an image service or extra package.
 
-Browser installability checks passed in Edge 157.0.4341.42, but a complete OS installation and iOS/Android installation have not been performed. Browser install promotion can also depend on engagement or platform policy.
+Browser installability checks passed on both localhost and the public HTTPS origin in Edge 157.0.4341.42; the ordinary browser also offered an Install app button, but a complete OS installation and iOS/Android installation have not been performed. Browser install promotion can also depend on engagement or platform policy.
 
 ## Offline means an explanation, not an old checkout
 

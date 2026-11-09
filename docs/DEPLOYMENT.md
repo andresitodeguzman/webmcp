@@ -7,11 +7,13 @@ The repository contains a standard Next.js App Router app, pinned to Next.js 16.
 - Workspace: `andresitovidauaras-projects` (`team_pr8PN0NhxAU1wAgBU9IR5CTy`).
 - New project: `webmcp-learning-lab` (`prj_WWrwDuLHcJ9cGfzLeHzEGajWtjTo`), linked to this repository's `main` branch.
 - Production address: [https://webmcp-learning-lab.vercel.app](https://webmcp-learning-lab.vercel.app).
-- The first PWA deployment reached **READY**. The new project's Node version is set to the tested **24.x** runtime.
-- **Public access is blocked** by inherited Vercel Authentication: `ssoProtection.deploymentType = all_except_custom_domains`. An unauthenticated request to its production alias redirects to Vercel SSO (HTTP 302).
-- No protection settings, credentials, trusted sources, bypass links, existing projects, or existing access have been changed. Public browser/PWA/WebMCP verification cannot be completed while that gate remains.
+- Production deployment is **READY**, using the tested **Node 24.x** runtime.
+- **Public access verified:** unauthenticated requests to `/`, `/shop`, `/help-desk`, the manifest, service worker, offline explanation, and icons return HTTP 200 without an SSO redirect.
+- Vercel Authentication was disabled **only for this project**, with the owner's approval. Password protection, trusted sources/IP settings, other projects, and unrelated security settings were not changed.
+- Public-origin native/fallback shopping and help-desk flows, PWA manifest/installability checks, exact cache contents, offline safeguards, and same-version update checks passed in disposable Edge profiles.
+- The ordinary Edge profile offers installation and correctly reports rehearsal mode. The native test profile used `--enable-blink-features=WebMCP`; no origin-trial token is configured, so native availability for ordinary attendees is still browser-dependent.
 
-Making only this app public, or using an appropriate authorized custom domain, needs a separate access decision. The local native/fallback/PWA checks do not prove that attendees can reach the protected deployment.
+The repo's `main` branch automatically deploys through its Git connection. [The verification record](VERIFICATION.md) distinguishes public HTTP/browser results from remaining OS-installation and real-agent limits.
 
 ## Build and check locally
 
