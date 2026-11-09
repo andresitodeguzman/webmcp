@@ -1,0 +1,16 @@
+{
+  "name": "webmcp-submit-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A human-first UI and WebMCP tool sharing one validated action.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "node test/browser.mjs",
+    "check": "node --check src/app.js && node --check src/domain.js && node --check src/tools.js && node --check server.mjs && npm test"
+  }
+}

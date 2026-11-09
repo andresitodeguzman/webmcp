@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dear AI, That's Not the Submit Button</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">WEBMCP · COMMUNITY LEARNING LAB</p>
+      <h1>Dear AI, that's not<br>the submit button.</h1>
+      <p class="intro">One task. Two paths. The same application logic.</p>
+      <p id="status" role="status">Checking browser support…</p>
+    </header>
+
+    <div class="grid">
+      <section>
+        <span class="step">01 / HUMAN PATH</span>
+        <h2 lang="fil">Patulong sa account</h2>
+        <p>A demo help desk for an online learning community. <span lang="fil">Walang totoong ticket na ipapadala.</span></p>
+        <form id="ticket-form">
+          <label for="summary">Issue summary</label>
+          <input id="summary" name="summary" required minlength="5" maxlength="120"
+            value="Hindi ako maka-sign in sa demo account ko">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option value="account">Account</option>
+            <option value="billing">Billing</option>
+            <option value="other">Other</option>
+          </select>
+          <div class="actions">
+            <button type="button" id="preview" class="secondary" lang="fil">Silip muna</button>
+            <button type="submit" lang="fil">Ipadala ang ticket</button>
+          </div>
+        </form>
+        <p id="feedback" aria-live="polite">No ticket submitted yet.</p>
+      </section>
+
+      <section>
+        <span class="step">02 / TOOL PATH</span>
+        <h2>A clear request, no guesswork</h2>
+        <p id="mode-copy">The panel is a deterministic tool caller, not an AI agent.</p>
+        <label for="arguments">Structured arguments (JSON)</label>
+        <textarea id="arguments" rows="6" spellcheck="false">{"summary":"Hindi ako maka-sign in sa demo account ko","category":"account"}</textarea>
+        <button id="run" disabled>Preparing tool…</button>
+        <pre id="result" aria-live="polite">The tool result will appear here.</pre>
+        <details>
+          <summary>Inspect the tool contract</summary>
+          <pre id="contract"></pre>
+        </details>
+      </section>
+    </div>
+
+    <section class="ledger">
+      <div class="ledger-title">
+        <div>
+          <span class="step">03 / SHARED STATE</span>
+          <h2><span lang="fil">Mga demo ticket</span> <span id="count">0</span></h2>
+        </div>
+        <button class="secondary" id="reset">Reset demo</button>
+      </div>
+      <ul id="tickets"><li>No tickets yet.</li></ul>
+      <p class="fine">Simulated tickets only. No backend, credentials, LLM, purchases or network submission. Refresh or reset clears the session.</p>
+    </section>
+
+    <footer>Learn by changing the code. Start with <strong>src/tools.js</strong>, then follow the walkthrough in README.md.</footer>
+  </main>
+</body>
+</html>

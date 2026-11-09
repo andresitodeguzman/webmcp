@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createTicketStore} from '../src/domain.js';
+import {makeTicketTool,registerTicketTool} from '../src/tools.js';
+const valid = {summary:'Cannot sign in',category:'account'};
+test('valid submission, stable duplicate, and reset', () => {const s=createTicketStore();assert.equal(s.submit(valid).ticket.id,'DEMO-001');assert.equal(s.submit(valid).duplicate,true);assert.equal(s.list().length,1);s.reset();assert.equal(s.list().length,0);});
+test('validates arguments independently of JSON schema', () => {for (const input of [null,[],{}, {...valid,category:'wrong'},{...valid,summary:'bad'},{...valid,summary:' '.repeat(7)},{...valid,summary:'x'.repeat(121)},{...valid,extra:true}]) assert.throws(()=>createTicketStore().submit(input));});
+test('store snapshots cannot mutate internal state',()=>{const s=createTicketStore();const r=s.submit(valid);r.ticket.summary='changed';const l=s.list();l[0].summary='changed';assert.equal(s.list()[0].summary,valid.summary);});
+test('tool returns JSON success and actionable errors',async()=>{const s=createTicketStore(),t=makeTicketTool(i=>s.submit(i));assert.equal(JSON.parse(await t.execute(valid)).ok,true);assert.equal(JSON.parse(await t.execute({})).ok,false);});
+test('cancelled calls make no mutation',async()=>{const s=createTicketStore(),t=makeTicketTool(i=>s.submit(i));await assert.rejects(t.execute(valid,{signal:AbortSignal.abort()}),{name:'AbortError'});assert.equal(s.list().length,0);});
+test('missing native API is an honest fallback',async()=>{assert.equal((await registerTicketTool(undefined,{})).native,false);});
+test('registration awaits browser and uses AbortSignal cleanup',async()=>{let signal;const tool=makeTicketTool(()=>{});const r=await registerTicketTool({async registerTool(t,o){assert.equal(t,tool);signal=o.signal;}},tool);assert.equal(r.native,true);assert.equal(signal.aborted,false);r.dispose();assert.equal(signal.aborted,true);});
+test('registration failure is propagated',async()=>{await assert.rejects(registerTicketTool({registerTool(){throw new Error('Denied');}},{}),/Denied/);});
