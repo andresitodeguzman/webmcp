@@ -1,46 +1,53 @@
 # Verification record
 
-Verified on 9 November 2026 on macOS, using Node.js 24.15.0 and Microsoft Edge 157.0.4341.42.
+Verified on **9 November 2026** on macOS, with **Node.js 24.15.0**, **Next.js 16.4.5**, **React 19.3.1**, and **Microsoft Edge 157.0.4341.42**.
 
-## Story and boundaries
+## What the app does
 
-A person submits a synthetic community-support ticket through the form or the tool panel. Both paths call `submit(input)`, which validates through `store.submit(input)`, updates the visible ticket list and returns the same result. The server only serves local assets. No API, database, account or model provider is involved.
+The home page links to two independent examples. In the help desk, the form and tool share one validated ticket action. In Pantry Run, ordinary shopping controls and five tools share a mock catalog, basket, delivery choice, and checkout-review state. A separate page button confirms a local receipt. There are no ticket, order, payment, database, or model-provider APIs.
 
-## Passed
+## Checks that passed
 
-- `npm run check`: application/server syntax checks and **9 tests passed, 0 failures**.
-- Unit tests: valid submissions, duplicate calls, reset, invalid arguments, immutable snapshots, structured results, cancellation before mutation, missing native API, registration cleanup and registration failure.
-- HTTP tests: all five app assets are served, content security headers are present, unknown paths and non-GET/HEAD methods are rejected, and package/server/environment files are not served.
-- `CHROME_BIN="/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" npm run test:browser`: **both fallback and native WebMCP passed**.
-- Each browser mode checked preview without mutation, human submission, tool submission, deduplication across the two paths, malformed JSON, application validation, HTML escaping, reset, reload, no uncaught JavaScript exceptions and no horizontal overflow at 390px width.
-- Native mode additionally discovered exactly one `submit_demo_ticket` using the real `document.modelContext.getTools()` API; the panel invoked it using `executeTool(tool, args)` and updated the shared visible state.
-- Captured desktop (1280 × 1050 viewport, full page) and mobile (390 × 844 viewport, full page) screenshots. Reviewed the [native desktop screenshot](images/native-desktop.png) and [native mobile screenshot](images/native-mobile.png).
-- Opened the localhost preview in the normal Edge profile and visually inspected its layout. That profile correctly displays rehearsal mode because native WebMCP is not enabled there.
+| Check | Result |
+| --- | --- |
+| `npm run check` | Syntax checks and **17 logic tests passed, 0 failures**. |
+| `npm run build` | Successful production build; `/`, `/shop`, and `/help-desk` prerendered. |
+| `npm run test:production` | All three production pages and their JavaScript bundles return 200; response headers present; source/config/environment paths return 404. |
+| `npm run test:browser` with Edge | **Fallback and native WebMCP both passed** against the production build. |
+| `TEST_SERVER=dev npm run test:browser` with Edge | **Fallback and native WebMCP both passed** in Next.js development mode with React Strict Mode enabled. |
+| `npm audit --omit=dev` | **0 reported vulnerabilities** in the installed dependency tree at the time checked. This is an advisory lookup, not a complete security audit. |
 
-The browser test launches temporary profiles with the `WebMCP` Blink feature explicitly disabled/enabled. It removes those profiles afterward. No browser security protections are disabled and no normal browser settings are changed. Localhost tests required permission to bind loopback ports outside the execution sandbox.
+Set `CHROME_BIN` as shown in the [README](../README.md#check-it-and-share-it) for the browser commands. Browser tests use temporary Chromium-compatible profiles with the `WebMCP` Blink feature explicitly disabled or enabled. They do not change the normal Edge profile, install an extension, or disable browser security checks. All test servers bind loopback addresses.
 
-## Test harness repair
+## What the tests cover
 
-The prepared browser test initially passed the fallback run, then reached its final native-discovery assertion and failed with `SyntaxError: Unexpected identifier 'document'`. Its CDP evaluation used a top-level `await` expression without enabling REPL parsing. Wrapping that assertion in an async function fixed the harness. Both full browser runs subsequently passed.
+**Help desk:** preview without mutation, form submission, matching tool call, duplicate handling, validation errors, cancellation before mutation, immutable snapshots, and rendering input as text rather than executable HTML.
 
-## Verification limits
+**Shopping:** combined catalog filters; price/stock validation; rejection of unknown or extra fields; integer centavo totals; absolute-quantity retries; zero quantity removing an item; empty-basket rejection; read-only tools leaving state unchanged; checkout review without ordering; cancellation preserving the basket; basket or delivery changes invalidating an old review; stable duplicate confirmation; immutable mock receipts; stock decrement after confirmation; and reset restoring stock without reusing old review IDs.
 
-- A real LLM agent's discovery, choice of tool and handling of missing arguments. The panel and tests use deterministic callers, not an LLM.
-- Browser/client combinations other than the one listed above. Experimental WebMCP implementations can change.
-- Other browsers, operating systems and assistive technologies have not been tested here. The browser smoke test checks narrow layout, not a complete accessibility audit.
+**Browser flow:** a mixture of UI clicks and native/fallback calls builds coffee + rice + tablea, adds mock delivery, and produces the expected **₱489.00** review. The tests cancel a review, invalidate another through a tool call, then confirm only through the page button. They check the receipt, basket clearing, stock change, reset, reload, invalid JSON, sold-out products, search escaping, no horizontal overflow at 390px, and no captured JavaScript exceptions or console errors. Review opens with keyboard focus on the summary rather than immediately on confirmation.
 
-## Local verification checklist
+**Lifecycle:** actual Next.js client navigation from help desk → home → shop unregisters the old tool set. Native discovery finds one help-desk tool, no tools on the home page, and exactly five shopping tools. Unit tests cover disposal, rollback after partial registration failure, and unmount while asynchronous registration is still pending. Development-mode browser runs check the Strict Mode lifecycle too.
 
-1. Run `npm run check` and `npm start`.
-2. Open localhost:4173. Verify “Silip muna” leaves the ticket count at zero.
-3. Submit the form; verify one ticket appears. Reset.
-4. In a development profile with WebMCP support, verify the native status label and native call button.
-5. Invoke the tool; verify the visible ticket and JSON result. Repeat and verify no extra ticket.
-6. Try malformed JSON and invalid categories; verify no mutation and an understandable error.
-7. Reset, reload and repeat. Check keyboard focus and narrow-screen layout.
-8. If using a real agent, confirm discovery and invocation in that exact browser/client setup.
-9. If native support is unavailable, verify that rehearsal mode is labeled as a direct function call rather than native WebMCP.
+## Visual checks
 
-## Repository
+Reviewed desktop (1280 × 1000 viewport, full page) and mobile (390 × 844 viewport, full page) screenshots of the shop, help desk, and checkout review. Also opened the built shop in the ordinary Edge profile and manually checked the ₱489 review. That profile correctly reports rehearsal mode.
 
-The target is the owner-created public repository [andresitodeguzman/webmcp](https://github.com/andresitodeguzman/webmcp). The existing initial commit and `# webmcp` README heading were retained; the prepared example was added to that history. Test results above describe the local checkout independently of GitHub publication.
+- [Shopping desktop](images/shop-desktop.png)
+- [Shopping mobile](images/shop-mobile.png)
+- [Checkout review](images/shop-review.png)
+- [Help-desk desktop](images/native-desktop.png)
+- [Help-desk mobile](images/native-mobile.png)
+
+The screenshot files show deterministic native test calls, not an LLM conversation.
+
+## Limits
+
+- A real LLM agent's tool discovery, choices, handling of missing information, and browser-extension integration have not been tested. The panel is a deterministic caller.
+- No public hosting deployment, public-origin trial token, or HTTPS event domain has been configured or tested. Public native WebMCP may require a supported origin trial or browser setting; HTTPS alone does not enable it. See [deployment requirements](DEPLOYMENT.md#native-webmcp-on-a-public-domain).
+- Only the listed browser/runtime/OS were tested. Other browsers and assistive technologies are not verified. Responsive and focus checks are not a complete accessibility audit.
+- The cart and confirmation model is a teaching example in browser memory, not production commerce authorization or payment security.
+
+## Check a chosen deployment
+
+After hosting is selected, repeat the built-route and browser checks on its real HTTPS origin. Confirm that ordinary visitors can use the UI and labeled fallback without signing in, then verify native support separately on the exact supported browser and origin. Do not infer public native support from the localhost test results.

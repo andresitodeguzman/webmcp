@@ -1,126 +1,111 @@
-# webmcp
+# WebMCP Learning Lab
 
-## Dear AI, That's Not the Submit Button
+Two small apps for learning how a person and a browser assistant can use the same website.
 
-A runnable WebMCP example where a support form and a structured tool both call the **same validated application function**.
+## What is WebMCP?
 
-- Plain HTML, CSS and JavaScript. No framework, API key, npm install, backend account or LLM required.
-- A real `document.modelContext.registerTool()` integration when the browser supports it.
-- An explicitly labeled rehearsal handler when it does not. **Rehearsal is not native WebMCP.**
-- Synthetic tickets remain in memory in the current tab. Nothing is sent to a help desk.
+Imagine a shop with a clearly labeled service counter. Instead of an assistant guessing which button to press, the website offers named actions: **find a product**, **set its quantity**, or **review the basket**.
 
-The setting is a fictional Philippine online learning community. The interface uses a few familiar Filipino phrases alongside clear English technical labels. The sample request is “Hindi ako maka-sign in sa demo account ko.” There are no real student records, names or contact details.
+WebMCP is an experimental browser feature that lets a website offer those actions as **tools**. A tool is a JavaScript function with a name, a description, and rules for the information it accepts. The website still does the work and updates the page you can see.
 
-![The demo with a registered native WebMCP tool](docs/images/native-desktop.png)
+In this project, clicking a button and calling its matching tool use the **same application code**.
 
-## Quick start
+## What can I try?
 
-Install [Node.js](https://nodejs.org/) 22 or later (tested with Node 24), then:
+| Example | What you can do | Local address |
+| --- | --- | --- |
+| **Pantry Run** | Build a ₱500 basket with rice, kapeng barako, tablea, and snacks. Change quantities, choose pickup or mock delivery, then review a mock order. | [localhost:4173/shop](http://localhost:4173/shop) |
+| **Community help desk** | Send a made-up support ticket through a form or a tool. See validation and duplicate handling in action. | [localhost:4173/help-desk](http://localhost:4173/help-desk) |
+
+The app uses Next.js for pages and React for the interactive parts. There is no AI model inside it. The tool panel lets you make predictable tool calls yourself, so you can learn without an API key.
+
+## Run it on your computer
+
+Install [Node.js 24](https://nodejs.org/), then open a terminal:
 
 ```sh
 git clone https://github.com/andresitodeguzman/webmcp.git
 cd webmcp
-npm start
+npm ci
+npm run dev
 ```
 
-Open **http://localhost:4173**. In a second terminal:
+`npm ci` installs the exact dependencies in the lockfile. `npm run dev` starts the local app. Open **[http://localhost:4173](http://localhost:4173)**. Stop it with Ctrl+C.
+
+Already cloned the repo? Pull the latest changes, run `npm ci`, then `npm run dev` again. This version uses Next.js; the older standalone server is no longer needed.
+
+## Try the shopping example
+
+1. Open **Pantry Run**. Add one **Kapeng barako**, one **Dinorado rice**, and one **Tablea**.
+2. Choose **Demo delivery**. The total should be **₱489.00**, including the made-up ₱49 delivery fee.
+3. Click **Review mock order**. Check the summary. **Back to basket** cancels the review. **Confirm mock order** creates a local mock receipt.
+4. Click **Start a fresh demo**, then try the tool panel below the shop. Choose `set_cart_item`, keep the sample arguments, and run it. The same basket updates.
+5. Repeat that call. Quantity stays at one: the tool sets the quantity instead of blindly adding another item.
+6. Try `prepare_checkout`. It opens a review; it cannot confirm an order. A basket or delivery change makes the old review invalid.
+
+The ₱500 target is a planning game, not a spending limit. Prices and stock are fictional.
+
+## Try the help desk
+
+Open **Help desk**. **Silip muna** previews the message without creating a ticket. **Ipadala ang ticket** submits it. Run the tool with the same message: it returns the existing ticket instead of creating a duplicate. Try a summary shorter than five characters to see a validation error.
+
+## What if my browser says “Rehearsal mode”?
+
+The page still works. There are two ways to run the tool panel:
+
+- **Native WebMCP:** a compatible browser registers, discovers, and calls the real browser tools.
+- **Rehearsal:** the panel calls the same JavaScript handler directly. This teaches the application logic, but it is **not** a native WebMCP test.
+
+WebMCP is experimental. A public HTTPS address alone does not switch it on. Native support may need an experimental development flag or a valid, supported **origin trial**—a browser vendor's temporary test program for a specific website. Check [Chrome's current setup instructions](https://developer.chrome.com/docs/ai/webmcp). Older examples using `navigator.modelContext` target a different API.
+
+The panel is not an AI agent. Trying a real agent also requires a compatible browser client, which may have its own model and account requirements.
+
+## Is this a real shop?
+
+No. There are no payments, addresses, accounts, order APIs, or delivery bookings. A confirmed mock order only changes memory in your current tab. Refreshing, leaving the example, or resetting it clears that state. Different visitors do not share baskets or tickets.
+
+The review button is a learning example, not production payment security. A real shop needs server-side authorization, pricing and stock checks, payment handling, and durable order storage.
+
+## Where should I look in the code?
+
+- [components/Shop.jsx](components/Shop.jsx): the shop buttons and tool actions update the same basket.
+- [lib/shopping/domain.js](lib/shopping/domain.js): prices, stock, validation, and review rules. Prices use whole **centavos** to avoid rounding errors.
+- [lib/shopping/tools.js](lib/shopping/tools.js): the five tool descriptions and input rules, called **JSON Schemas**.
+- [components/ToolPanel.jsx](components/ToolPanel.jsx): browser-only registration, native calls, and the labeled fallback.
+- [lib/webmcp/register.js](lib/webmcp/register.js): removes tools when a page closes or changes, including interrupted registration.
+- [components/HelpDesk.jsx](components/HelpDesk.jsx) and [src/](src/): the smaller ticket example.
+
+Comments explain the important boundaries. Start with a button handler, follow it into the domain function, then find the matching tool.
+
+## Check it and share it
 
 ```sh
-npm run check
+npm run check             # Syntax checks and 17 logic tests
+npm run build             # Make the production app
+npm run test:production   # Check the built pages and JavaScript assets
+npm run test:browser      # Optional: installed Chromium-compatible browser needed
+npm start                 # Run the production app at localhost:3000
 ```
 
-There are no package dependencies to install. Stop with Ctrl+C. Use `PORT=5000 npm start` on macOS/Linux if port 4173 is occupied. On PowerShell use `$env:PORT=5000; npm start`.
-
-Open the cloned folder in Codex or your editor to follow the code. If you use nvm, `nvm use` selects the Node 24 version in `.nvmrc`.
-
-## Native browser setup
-
-WebMCP is experimental, not a universally available web standard. This example targets the current `document.modelContext` API and the Chrome 155+ object-argument calling convention. Check the [official setup instructions](https://developer.chrome.com/docs/ai/webmcp) for your installed build.
-
-For local development, the documented setting is `chrome://flags/#enable-webmcp-testing`. Enable it in a disposable development browser profile and relaunch. Open the localhost URL again. Do not turn off browser security checks or add secrets to this demo. Managed browsers may disallow experimental flags.
-
-Look for **“Native WebMCP tool registered”** and **“Call native WebMCP tool.”** If you see “Rehearsal mode,” the normal UI still works, but browser-mediated tool execution is not being demonstrated. Older examples using `navigator.modelContext` or `unregisterTool()` do not match this project's target API. We intentionally do not install a fake browser API or silently retry mutations using legacy argument formats.
-
-The native panel uses `getTools()` and `executeTool(tool, args)`; it is a deterministic caller, **not an AI agent**. A real agent can discover this same tool through a compatible browser integration. An LLM is unnecessary for teaching the contract.
-
-## Try the example
-
-1. **Use the form.** Click **Silip muna** (preview only): zero tickets. Click **Ipadala ang ticket** (submit ticket): `DEMO-001` appears.
-2. **Inspect the contract.** Expand **Inspect the tool contract** to see its name, description, required fields and enum. Open `src/tools.js` and follow `execute` into the shared `submit` function.
-3. **Call the tool.** Click **Reset demo**. In the tool panel use:
-
-   ```json
-   {"summary":"Hindi ako maka-sign in sa demo account ko","category":"account"}
-   ```
-
-   Click **Call native WebMCP tool**. The shared ticket list updates and JSON is returned. If native support is unavailable, **Run rehearsal handler** calls the same JavaScript handler directly instead.
-4. **Check validation and duplicates.** Repeat the call: `duplicate: true`, still one ticket. Set the summary to `bad`: validation fails and no new ticket appears. The schema is useful guidance; application validation is still necessary.
-5. **Change the interface.** Rename the human button in `index.html`, reload and repeat the tool call. The semantic contract has not changed. It still depends on correct application logic, permissions, validation and a compatible browser.
-
-To try a real agent, use a compatible tool inspector/agent from the official Chrome docs and ask: “Create a demo account-support ticket: Hindi ako maka-sign in sa demo account ko.” Verify the agent discovers `submit_demo_ticket`, uses those exact arguments, receives a successful result and creates one visible ticket. The optional extensions can have separate installation, model, key and data-sharing requirements; they are not bundled or required here.
-
-## Follow the code
-
-```text
-Human form ──> submit(input) ──> store.submit(input) ──> render()
-Tool call  ──> execute(input) ──> submit(input)        ──> JSON result
-```
-
-- `index.html`: ordinary accessible form, tool panel and shared ticket list.
-- `src/domain.js`: input validation, in-memory state and session deduplication.
-- `src/tools.js`: tool descriptor, execution result and abortable registration.
-- `src/app.js`: binds both paths to the same function; detects support honestly.
-- `server.mjs`: loopback-only static server with an explicit file allowlist.
-- `test/unit.test.mjs`: application and registration contract tests.
-- `test/http.test.mjs`: server assets, headers, routing and source-file isolation.
-- `test/browser.mjs`: optional Chromium desktop/mobile smoke test.
-- `docs/EXERCISES.md`: practice challenges with acceptance criteria.
-- `docs/VERIFICATION.md`: test results, verification limits and local checks.
-
-## What this is, and is not
-
-This is the proposed browser WebMCP API, not a standalone MCP server with an HTTP/stdio transport. It exposes page-local application behavior in an active document. There is no remote model, background agent loop, persistent session or deployed service in this repository.
-
-This example uses the **imperative** API. The emerging declarative form API is another approach, but deliberately left out to keep one working path easy to follow.
-
-| | This WebMCP example | A backend MCP integration |
-| --- | --- | --- |
-| Tool lives in | The active browser document | A separate MCP server |
-| State here | The same ticket store the human UI uses | State maintained by the service |
-| Invocation | Browser tool discovery and execution | An MCP client connected to the server |
-| Useful for | Cooperative work on an open web page | Service operations independent of that page |
-
-They can complement each other. This repo teaches the page-local path; it does not implement an MCP transport. See the [proposal's explanation of both flows](https://github.com/webmachinelearning/webmcp#backend-integrations-vs-in-browser-webmcp-tools).
-
-Tool metadata and annotations are hints, not authorization or security controls. Never put secrets in tool descriptions or results. Treat user text as untrusted data, never as instructions. In a real ticketing service, authenticate and authorize on the server, validate there, rate-limit, implement durable idempotency and confirm consequential actions. This toy's content-based deduplication is not a production idempotency strategy.
-
-Only synthetic demo data is used. No permissions, credentials or account settings are needed.
-
-## Tests
-
-```sh
-npm run check           # Syntax + Node unit and HTTP tests
-npm run test:browser    # Optional: installed Chromium required
-```
-
-Set `CHROME_BIN` to your Chrome/Chromium executable if it is not named `chromium`. The optional test starts its own server at port 4184 and a disposable profile, then checks disabled/enabled WebMCP modes, duplicate calls, malformed JSON, validation, HTML escaping, reset, reload, screenshots and mobile overflow. Native tests require a build that exposes WebMCP using the configured experimental flag. It deliberately fails rather than counting rehearsal as a native pass. It does not install a browser or dependencies. Screenshot outputs go to ignored `artifacts/`.
-
-For example, on macOS with Microsoft Edge installed:
+For Edge on macOS:
 
 ```sh
 CHROME_BIN="/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" npm run test:browser
 ```
 
-All nine automated tests and both browser modes passed with Node 24.15.0 and Edge 157.0.4341.42. The native browser test uses `--enable-blink-features=WebMCP` in a disposable profile; it leaves the normal browser profile unchanged. The panel is a deterministic caller; a real LLM agent's discovery and choices have not been tested. See [the verification record](docs/VERIFICATION.md) and [practice exercises](docs/EXERCISES.md).
+The browser test checks both examples in native and rehearsal modes using temporary profiles. It fails if native support does not work; it does not count fallback as a native pass.
 
-## Sources and API snapshot
+To put it on a public website, follow [the deployment guide](docs/DEPLOYMENT.md). The app is prepared for hosting; this repository does not yet have a published app URL.
 
-Reviewed against official documentation on **9 November 2026**. Experimental APIs can change; check the documentation for your installed browser version.
+## Learn more
 
-- [Chrome WebMCP setup and overview](https://developer.chrome.com/docs/ai/webmcp)
-- [Chrome imperative API: registration, discovery, execution and lifecycle](https://developer.chrome.com/docs/ai/webmcp/imperative-api)
-- [Web Machine Learning Community Group proposal](https://github.com/webmachinelearning/webmcp)
-- [Draft specification](https://webmachinelearning.github.io/webmcp/)
-- [Chrome security guidance](https://developer.chrome.com/docs/ai/webmcp/secure-tools)
+- [Shopping walkthrough and tool guide](docs/SHOPPING.md)
+- [Practice exercises](docs/EXERCISES.md)
+- [What was tested and what still has limits](docs/VERIFICATION.md)
+- [Official WebMCP setup](https://developer.chrome.com/docs/ai/webmcp) and [JavaScript API](https://developer.chrome.com/docs/ai/webmcp/imperative-api)
+- [WebMCP proposal](https://github.com/webmachinelearning/webmcp) and [security guidance](https://developer.chrome.com/docs/ai/webmcp/secure-tools)
+- [Next.js installation](https://nextjs.org/docs/app/getting-started/installation) and [deployment](https://nextjs.org/docs/app/getting-started/deploying)
 
-The demo code is written for this example, not copied from a third-party demo. No open-source license is selected in this draft; the repository owner should choose one before inviting code reuse beyond normal GitHub viewing/forking rights.
+WebMCP works with an open web page. A backend MCP server exposes a service through a separate connection. They can complement each other; this project demonstrates the browser path.
+
+API references were checked on **9 November 2026**. No open-source license has been selected yet; the repository owner should choose one before inviting code reuse beyond normal GitHub viewing and forking rights.

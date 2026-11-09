@@ -3,3 +3,7 @@ node_modules/
 .env.*
 artifacts/
 *.log
+.next/
+out/
+.vercel/
+.DS_Store
