@@ -1,6 +1,6 @@
 # Verification record
 
-Verified on 9 November 2026 on Andre's MacBook Neo, using Node.js 24.15.0 and Microsoft Edge 157.0.4341.42.
+Verified on 9 November 2026 on macOS, using Node.js 24.15.0 and Microsoft Edge 157.0.4341.42.
 
 ## Story and boundaries
 
@@ -23,13 +23,13 @@ The browser test launches temporary profiles with the `WebMCP` Blink feature exp
 
 The prepared browser test initially passed the fallback run, then reached its final native-discovery assertion and failed with `SyntaxError: Unexpected identifier 'document'`. Its CDP evaluation used a top-level `await` expression without enabling REPL parsing. Wrapping that assertion in an async function fixed the harness. Both full browser runs subsequently passed.
 
-## Still to rehearse
+## Verification limits
 
 - A real LLM agent's discovery, choice of tool and handling of missing arguments. The panel and tests use deterministic callers, not an LLM.
-- The exact browser/client combination used on stage. Experimental WebMCP implementations can change.
+- Browser/client combinations other than the one listed above. Experimental WebMCP implementations can change.
 - Other browsers, operating systems and assistive technologies have not been tested here. The browser smoke test checks narrow layout, not a complete accessibility audit.
 
-## Presentation laptop checklist
+## Local verification checklist
 
 1. Run `npm run check` and `npm start`.
 2. Open localhost:4173. Verify “Silip muna” leaves the ticket count at zero.
@@ -38,8 +38,8 @@ The prepared browser test initially passed the fallback run, then reached its fi
 5. Invoke the tool; verify the visible ticket and JSON result. Repeat and verify no extra ticket.
 6. Try malformed JSON and invalid categories; verify no mutation and an understandable error.
 7. Reset, reload and repeat. Check keyboard focus and narrow-screen layout.
-8. If using a real agent, confirm discovery and invocation in that exact browser/client setup before the talk.
-9. If native support is unavailable, explicitly present rehearsal mode as a direct function-call demonstration.
+8. If using a real agent, confirm discovery and invocation in that exact browser/client setup.
+9. If native support is unavailable, verify that rehearsal mode is labeled as a direct function call rather than native WebMCP.
 
 ## Repository
 
