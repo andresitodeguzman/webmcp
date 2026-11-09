@@ -2,7 +2,16 @@
 
 The repository contains a standard Next.js App Router app, pinned to Next.js 16.4.5 and React 19.3.1. Node.js 24 is the tested runtime. There are no database, payment, AI, or account services to provision, and no environment variables are required.
 
-No public app has been deployed as part of this repository change. Choose a hosting account, project, and domain before deploying.
+## Current deployment
+
+- Workspace: `andresitovidauaras-projects` (`team_pr8PN0NhxAU1wAgBU9IR5CTy`).
+- New project: `webmcp-learning-lab` (`prj_WWrwDuLHcJ9cGfzLeHzEGajWtjTo`), linked to this repository's `main` branch.
+- Production address: [https://webmcp-learning-lab.vercel.app](https://webmcp-learning-lab.vercel.app).
+- The first PWA deployment reached **READY**. The new project's Node version is set to the tested **24.x** runtime.
+- **Public access is blocked** by inherited Vercel Authentication: `ssoProtection.deploymentType = all_except_custom_domains`. An unauthenticated request to its production alias redirects to Vercel SSO (HTTP 302).
+- No protection settings, credentials, trusted sources, bypass links, existing projects, or existing access have been changed. Public browser/PWA/WebMCP verification cannot be completed while that gate remains.
+
+Making only this app public, or using an appropriate authorized custom domain, needs a separate access decision. The local native/fallback/PWA checks do not prove that attendees can reach the protected deployment.
 
 ## Build and check locally
 

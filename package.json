@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Learn WebMCP through a mock pantry shop and a shared help-desk workflow in Next.js.",
   "engines": {
-    "node": ">=22"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 4173",

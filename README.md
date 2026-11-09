@@ -103,7 +103,7 @@ CHROME_BIN="/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" npm 
 
 The browser test checks both examples in native and rehearsal modes using temporary profiles. It fails if native support does not work; it does not count fallback as a native pass.
 
-To put it on a public website, follow [the deployment guide](docs/DEPLOYMENT.md). The app is prepared for hosting; this repository does not yet have a published app URL.
+The app is deployed at [webmcp-learning-lab.vercel.app](https://webmcp-learning-lab.vercel.app) in the selected Vercel workspace. **It currently requires Vercel sign-in** because of inherited deployment protection, so it is not yet publicly accessible to attendees. See [deployment status and requirements](docs/DEPLOYMENT.md).
 
 ## Learn more
 

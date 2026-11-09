@@ -48,7 +48,7 @@ The screenshot files show deterministic native test calls, not an LLM conversati
 ## Limits
 
 - A real LLM agent's tool discovery, choices, handling of missing information, and browser-extension integration have not been tested. The panel is a deterministic caller.
-- No public hosting deployment, public-origin trial token, or HTTPS event domain has been configured or tested. Public native WebMCP may require a supported origin trial or browser setting; HTTPS alone does not enable it. See [deployment requirements](DEPLOYMENT.md#native-webmcp-on-a-public-domain).
+- A production Vercel deployment reached READY, but inherited Vercel Authentication redirects unauthenticated visitors to SSO (HTTP 302). Public app-route, PWA, and WebMCP checks are blocked by that access gate. No public-origin trial token or custom HTTPS event domain has been configured. Native WebMCP may need supported browser settings or a valid trial; HTTPS alone does not enable it. See [deployment status](DEPLOYMENT.md#current-deployment).
 - Only the listed browser/runtime/OS were tested. Other browsers and assistive technologies are not verified. Responsive and focus checks are not a complete accessibility audit.
 - The cart and confirmation model is a teaching example in browser memory, not production commerce authorization or payment security.
 
