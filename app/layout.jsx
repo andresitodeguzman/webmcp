@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PwaStatus from "../components/PwaStatus.jsx";
 import "./globals.css";
 
 export const metadata = {
@@ -8,7 +9,11 @@ export const metadata = {
   },
   description:
     "Learn how people and browser tools can share the same application actions. Try a mock pantry shop and a help desk.",
+  applicationName: "WebMCP Learning Lab",
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
 };
+
+export const viewport = { themeColor: "#214f3c" };
 
 export default function RootLayout({ children }) {
   return (
@@ -29,6 +34,7 @@ export default function RootLayout({ children }) {
             </a>
           </div>
         </nav>
+        <PwaStatus />
         {children}
       </body>
     </html>

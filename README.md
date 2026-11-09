@@ -66,6 +66,14 @@ No. There are no payments, addresses, accounts, order APIs, or delivery bookings
 
 The review button is a learning example, not production payment security. A real shop needs server-side authorization, pricing and stock checks, payment handling, and durable order storage.
 
+## Can I install it as an app?
+
+Yes. This is also a **PWA** (Progressive Web App): a website your browser can add to your home screen or dock. Use **Install app** when offered, or your browser’s app installation menu. On iPhone or iPad, look for **Add to Home Screen** in the Share menu.
+
+Installation does **not** enable WebMCP. The same browser compatibility rules above still apply.
+
+Offline, the app shows a reconnect screen instead of an old shopping page. It caches only that explanation and the app icons. Open reviews close when the connection drops; changes and confirmation pause. No basket, ticket, receipt, or checkout action is saved or queued. Reconnect and review again, or reload for a fresh demo. Updates wait for **Update app · resets demo** rather than silently interrupting a basket. See [the PWA guide](docs/PWA.md).
+
 ## Where should I look in the code?
 
 - [components/Shop.jsx](components/Shop.jsx): the shop buttons and tool actions update the same basket.
@@ -80,7 +88,7 @@ Comments explain the important boundaries. Start with a button handler, follow i
 ## Check it and share it
 
 ```sh
-npm run check             # Syntax checks and 17 logic tests
+npm run check             # Syntax checks and 22 logic tests
 npm run build             # Make the production app
 npm run test:production   # Check the built pages and JavaScript assets
 npm run test:browser      # Optional: installed Chromium-compatible browser needed

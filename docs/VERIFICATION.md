@@ -10,7 +10,7 @@ The home page links to two independent examples. In the help desk, the form and 
 
 | Check | Result |
 | --- | --- |
-| `npm run check` | Syntax checks and **17 logic tests passed, 0 failures**. |
+| `npm run check` | Syntax checks and **22 logic tests passed, 0 failures**. |
 | `npm run build` | Successful production build; `/`, `/shop`, and `/help-desk` prerendered. |
 | `npm run test:production` | All three production pages and their JavaScript bundles return 200; response headers present; source/config/environment paths return 404. |
 | `npm run test:browser` with Edge | **Fallback and native WebMCP both passed** against the production build. |
@@ -28,6 +28,10 @@ Set `CHROME_BIN` as shown in the [README](../README.md#check-it-and-share-it) fo
 **Browser flow:** a mixture of UI clicks and native/fallback calls builds coffee + rice + tablea, adds mock delivery, and produces the expected **₱489.00** review. The tests cancel a review, invalidate another through a tool call, then confirm only through the page button. They check the receipt, basket clearing, stock change, reset, reload, invalid JSON, sold-out products, search escaping, no horizontal overflow at 390px, and no captured JavaScript exceptions or console errors. Review opens with keyboard focus on the summary rather than immediately on confirmation.
 
 **Lifecycle:** actual Next.js client navigation from help desk → home → shop unregisters the old tool set. Native discovery finds one help-desk tool, no tools on the home page, and exactly five shopping tools. Unit tests cover disposal, rollback after partial registration failure, and unmount while asynchronous registration is still pending. Development-mode browser runs check the Strict Mode lifecycle too.
+
+## PWA checks
+
+The production browser parsed the web app manifest with no errors and reported no installability errors. Cache Storage contained only the offline explanation and four icons. Both native and fallback runs verified offline navigation, a rendered offline icon, blocked basket writes, cancellation of an open review on disconnect, fresh state after reconnect/reload, and no silent reload during a same-version update check. Unit tests cover the manifest/icon dimensions, cache allowlist, old-version cleanup, and explicit activation message policy. OS installation and a full two-deployment upgrade of an installed app remain untested. See [PWA behavior](PWA.md).
 
 ## Visual checks
 

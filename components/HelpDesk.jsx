@@ -21,6 +21,10 @@ export default function HelpDesk() {
   const [feedback, setFeedback] = useState("No ticket submitted yet.");
   const submitTicket = useCallback(
     (input) => {
+      if (!navigator.onLine)
+        throw new Error(
+          "You’re offline. Reconnect before submitting a demo ticket.",
+        );
       // UI and tool execution both enter this action; React renders its snapshot.
       const result = store.submit(input);
       setTickets(store.list());

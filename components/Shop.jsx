@@ -48,7 +48,12 @@ export default function Shop() {
   const dialogRef = useRef(null);
 
   const actions = useMemo(() => {
-    function update(result, message) {
+    function update(operation, input, message) {
+      if (!navigator.onLine)
+        throw new Error(
+          "You’re offline. Reconnect before changing or reviewing the basket.",
+        );
+      const result = operation(input);
       // The store is the source of truth; both UI and WebMCP refresh this snapshot.
       setView(shop.state());
       setFeedback(message);
@@ -59,22 +64,39 @@ export default function Shop() {
       get_cart: (input) => shop.getCart(input),
       set_cart_item: (input) =>
         update(
-          shop.setCartItem(input),
+          shop.setCartItem,
+          input,
           "Basket updated. Any changed basket needs a fresh checkout review.",
         ),
       set_delivery: (input) =>
         update(
-          shop.setDelivery(input),
+          shop.setDelivery,
+          input,
           "Fulfillment updated. The basket total includes the fee.",
         ),
       prepare_checkout: (input) =>
         update(
-          shop.prepareCheckout(input),
+          shop.prepareCheckout,
+          input,
           "Review is ready. No order has been created.",
         ),
     };
   }, [shop]);
   const tools = useMemo(() => makeShoppingTools(actions), [actions]);
+
+  useEffect(() => {
+    const offline = () => {
+      // A review that was opened online cannot remain confirmable after a drop.
+      // No action is queued for a later retry or replayed on reconnection.
+      shop.cancelReview();
+      setView(shop.state());
+      setFeedback(
+        "You’re offline. Review closed; reconnect and review the basket again.",
+      );
+    };
+    window.addEventListener("offline", offline);
+    return () => window.removeEventListener("offline", offline);
+  }, [shop]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -100,6 +122,10 @@ export default function Shop() {
   }
   function confirm() {
     try {
+      if (!navigator.onLine)
+        throw new Error(
+          "You’re offline. Reconnect and review the basket again.",
+        );
       // Confirmation uses the exact reviewed ID. A changed cart invalidates it in
       // the domain layer, even if this UI had not rendered the change yet.
       const result = shop.confirmReview(view.review?.id);

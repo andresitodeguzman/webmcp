@@ -7,8 +7,9 @@ import path from "node:path";
 import assert from "node:assert/strict";
 
 const port = Number(process.env.TEST_PORT || 4184);
-const base = `http://127.0.0.1:${port}`;
-const artifactDirectory = process.env.TEST_SERVER === "dev" ? "artifacts/dev" : "artifacts";
+const base = process.env.TEST_BASE_URL || `http://127.0.0.1:${port}`;
+const artifactDirectory =
+  process.env.TEST_SERVER === "dev" ? "artifacts/dev" : "artifacts";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function waitFor(fn) {
   let lastError;
@@ -23,23 +24,25 @@ async function waitFor(fn) {
   }
   throw new Error(`Timed out${lastError ? `: ${lastError.message}` : ""}`);
 }
-const server = spawn(
-  process.execPath,
-  [
-    "node_modules/next/dist/bin/next",
-    process.env.TEST_SERVER === "dev" ? "dev" : "start",
-    "-H",
-    "127.0.0.1",
-    "-p",
-    String(port),
-  ],
-  { stdio: ["ignore", "pipe", "pipe"] },
-);
+const server = process.env.TEST_BASE_URL
+  ? null
+  : spawn(
+      process.execPath,
+      [
+        "node_modules/next/dist/bin/next",
+        process.env.TEST_SERVER === "dev" ? "dev" : "start",
+        "-H",
+        "127.0.0.1",
+        "-p",
+        String(port),
+      ],
+      { stdio: ["ignore", "pipe", "pipe"] },
+    );
 let serverLog = "";
-server.stdout.on("data", (bytes) => {
+server?.stdout.on("data", (bytes) => {
   serverLog += bytes;
 });
-server.stderr.on("data", (bytes) => {
+server?.stderr.on("data", (bytes) => {
   serverLog += bytes;
 });
 
@@ -101,7 +104,7 @@ async function run(native) {
       )
         errors.push(message.params.args);
     });
-    const cdp = (method, params = {}) =>
+    const cdp = (method, params = {}, sessionId) =>
       new Promise((resolve, reject) => {
         const key = ++id;
         const timer = setTimeout(() => {
@@ -109,7 +112,14 @@ async function run(native) {
           reject(new Error(`CDP timeout: ${method}`));
         }, 10000);
         calls.set(key, { resolve, reject, timer });
-        socket.send(JSON.stringify({ id: key, method, params }));
+        socket.send(
+          JSON.stringify({
+            id: key,
+            method,
+            params,
+            ...(sessionId ? { sessionId } : {}),
+          }),
+        );
       });
     const evaluate = async (expression) => {
       const result = await cdp("Runtime.evaluate", {
@@ -187,6 +197,49 @@ async function run(native) {
     });
     await cdp("Page.navigate", { url: `${base}/help-desk` });
     await ready();
+    let workerSession;
+    if (process.env.TEST_SERVER !== "dev") {
+      await waitFor(() =>
+        evaluate("Boolean(navigator.serviceWorker?.controller)"),
+      );
+      const { targetInfos } = await cdp("Target.getTargets");
+      const workerTarget = targetInfos.find(
+        (target) =>
+          target.type === "service_worker" && target.url === `${base}/sw.js`,
+      );
+      assert.ok(workerTarget, "The offline worker should have its own target");
+      workerSession = (
+        await cdp("Target.attachToTarget", {
+          targetId: workerTarget.targetId,
+          flatten: true,
+        })
+      ).sessionId;
+      await cdp("Network.enable", {}, workerSession);
+      const manifest = await cdp("Page.getAppManifest");
+      assert.deepEqual(manifest.errors, []);
+      assert.equal(JSON.parse(manifest.data).display, "standalone");
+      await waitFor(
+        async () =>
+          (await cdp("Page.getInstallabilityErrors")).installabilityErrors
+            .length === 0,
+      );
+      const cached = await evaluate(
+        "(async () => { const keys = await caches.keys(); return (await Promise.all(keys.map(async key => (await (await caches.open(key)).keys()).map(request => new URL(request.url).pathname)))).flat(); })()",
+      );
+      assert.deepEqual(
+        cached.sort(),
+        [
+          "/offline.html",
+          "/icons/icon-192.png",
+          "/icons/icon-512.png",
+          "/icons/maskable-512.png",
+          "/icons/apple-touch-icon.png",
+        ].sort(),
+      );
+      console.log(
+        `PASS ${native ? "native" : "fallback"} PWA: manifest parsed, no browser installability errors, offline cache contains only five static assets.`,
+      );
+    }
     assert.equal(
       await evaluate("document.getElementById('status').dataset.native"),
       String(native),
@@ -340,6 +393,62 @@ async function run(native) {
       evaluate("document.getElementById('checkout-dialog').open"),
     );
     await screenshot("shop-review");
+    if (process.env.TEST_SERVER !== "dev") {
+      await cdp("Network.enable");
+      await cdp("Network.emulateNetworkConditions", {
+        offline: true,
+        latency: 0,
+        downloadThroughput: 0,
+        uploadThroughput: 0,
+      });
+      // Service-worker fetches run in another target; emulate its transport too.
+      await cdp(
+        "Network.emulateNetworkConditions",
+        {
+          offline: true,
+          latency: 0,
+          downloadThroughput: 0,
+          uploadThroughput: 0,
+        },
+        workerSession,
+      );
+      await waitFor(() =>
+        evaluate(
+          "!navigator.onLine && !document.getElementById('checkout-dialog').open",
+        ),
+      );
+      assert.equal(
+        (await tool("set_cart_item", { productId: "coffee", quantity: 2 })).ok,
+        false,
+      );
+      assert.equal(await text("#cart-count"), "3");
+      await click("#review");
+      assert.equal(
+        await evaluate("document.getElementById('checkout-dialog').open"),
+        false,
+      );
+      await cdp("Network.emulateNetworkConditions", {
+        offline: false,
+        latency: 0,
+        downloadThroughput: -1,
+        uploadThroughput: -1,
+      });
+      await cdp(
+        "Network.emulateNetworkConditions",
+        {
+          offline: false,
+          latency: 0,
+          downloadThroughput: -1,
+          uploadThroughput: -1,
+        },
+        workerSession,
+      );
+      await waitFor(() => evaluate("navigator.onLine"));
+      await tool("prepare_checkout", {});
+      await waitFor(() =>
+        evaluate("document.getElementById('checkout-dialog').open"),
+      );
+    }
     await click("#confirm-order");
     await waitFor(() =>
       evaluate("Boolean(document.getElementById('receipt'))"),
@@ -371,6 +480,74 @@ async function run(native) {
         ),
         5,
       );
+    if (process.env.TEST_SERVER !== "dev") {
+      await tool("set_cart_item", { productId: "rice", quantity: 1 });
+      await evaluate(
+        "(async () => { const registration = await navigator.serviceWorker.ready; await registration.update(); })()",
+      );
+      assert.equal(
+        await text("#cart-count"),
+        "1",
+        "An update check must not silently reload a basket",
+      );
+      await cdp("Network.emulateNetworkConditions", {
+        offline: true,
+        latency: 0,
+        downloadThroughput: 0,
+        uploadThroughput: 0,
+      });
+      await cdp(
+        "Network.emulateNetworkConditions",
+        {
+          offline: true,
+          latency: 0,
+          downloadThroughput: 0,
+          uploadThroughput: 0,
+        },
+        workerSession,
+      );
+      await cdp("Page.navigate", { url: `${base}/shop?offline-test=1` });
+      await waitFor(async () => {
+        const title = await evaluate("document.title");
+        if (title === "Offline · WebMCP Learning Lab") return true;
+        throw new Error(
+          `Expected offline explanation; current title: ${title}`,
+        );
+      });
+      assert.equal(
+        await evaluate("Boolean(document.getElementById('confirm-order'))"),
+        false,
+      );
+      assert.equal(
+        await evaluate(
+          "document.images[0].complete && document.images[0].naturalWidth > 0",
+        ),
+        true,
+      );
+      await screenshot("offline");
+      await cdp("Network.emulateNetworkConditions", {
+        offline: false,
+        latency: 0,
+        downloadThroughput: -1,
+        uploadThroughput: -1,
+      });
+      await cdp(
+        "Network.emulateNetworkConditions",
+        {
+          offline: false,
+          latency: 0,
+          downloadThroughput: -1,
+          uploadThroughput: -1,
+        },
+        workerSession,
+      );
+      await cdp("Page.navigate", { url: `${base}/shop` });
+      await ready();
+      assert.equal(await text("#cart-count"), "0");
+      console.log(
+        `PASS ${native ? "native" : "fallback"} PWA offline/update: review closed on disconnect, mutations blocked, safe offline navigation/icons, reconnect fresh state, update check preserves basket.`,
+      );
+    }
     assert.deepEqual(errors, []);
     console.log(
       `PASS ${native ? "native WebMCP" : "fallback"}: help desk; Next.js navigation/cleanup; search; cart/stock/totals; tool/UI shared state; review/cancel/invalidation/confirmation; reset/reload; desktop/mobile; no console errors.`,
@@ -392,12 +569,12 @@ async function run(native) {
 }
 try {
   await waitFor(async () => {
-    if (server.exitCode !== null) throw new Error(serverLog);
+    if (server && server.exitCode !== null) throw new Error(serverLog);
     return (await fetch(base)).ok;
   });
   await mkdir(artifactDirectory, { recursive: true });
   await run(false);
   await run(true);
 } finally {
-  server.kill();
+  server?.kill();
 }

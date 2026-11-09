@@ -935,3 +935,51 @@ dialog .mock-banner {
       background-color 0.15s;
   }
 }
+
+/* Installation is optional. Connection and update notices never hide the demo. */
+.pwa-status {
+  max-width: 1380px;
+  margin: auto;
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 11px;
+  color: #586a60;
+  border-bottom: 1px solid #dddcd1;
+  flex-wrap: wrap;
+}
+.pwa-status p {
+  margin: 0;
+}
+.pwa-status > div {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.pwa-status details {
+  max-width: 520px;
+}
+.pwa-status details p {
+  padding-top: 10px;
+  max-width: 500px;
+}
+.pwa-status summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.pwa-status .text-button {
+  padding: 0;
+  font-size: 11px;
+}
+@media (max-width: 760px) {
+  .pwa-status {
+    padding: 12px 18px;
+    gap: 8px;
+  }
+  .pwa-status > div {
+    gap: 12px;
+  }
+}

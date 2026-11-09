@@ -50,6 +50,10 @@ The three pages are prerendered, while their interactive state runs in the visit
 
 For attendees, the ordinary interface and labeled rehearsal panel remain usable without experimental browser settings. Do not describe rehearsal results as native WebMCP results. There is no bundled LLM agent or browser extension; optional clients may have separate keys, models, and data-sharing requirements.
 
+## Installable PWA
+
+Production includes the manifest, install icons, and a minimal offline service worker. Its scope is the app origin; it caches only a static offline explanation and icons. App pages, baskets, tickets, receipts, and checkout actions are not cached or queued by the worker. Updates wait for the visitor to choose a reload. PWA installation does not enable native WebMCP. See [the PWA guide](PWA.md) for installation, cache policy, update behavior, and tests.
+
 ## Public-demo boundaries
 
 - Catalog prices, stock, shipping fees, receipts, and support tickets are synthetic.
